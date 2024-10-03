@@ -1,0 +1,60 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: tomcat-login
+  labels:
+    app: tomcat-login
+spec:
+  progressDeadlineSeconds: 600
+  revisionHistoryLimit: 10
+  strategy:
+    rollingUpdate:
+      maxSurge: 25%
+      maxUnavailable: 25%
+    type: RollingUpdate
+  replicas: 2
+  selector:
+    matchLabels:
+      app: tomcat-login
+  template:
+    metadata:
+      labels:
+        app: tomcat-login
+    spec:
+      imagePullSecrets:
+      - name: ecr-secret  # ECR 인증 정보
+      containers:
+      - name: tomcat
+        image: 784849575779.dkr.ecr.us-east-1.amazonaws.com/tomcat:v7.0
+        ports:
+        - containerPort: 8080
+        resources:
+          requests:
+            cpu: "200m"
+            memory: "256Mi"
+          limits:
+            cpu: "200m"
+            memory: "256Mi"
+        livenessProbe:
+          httpGet:
+            path: /
+            port: 8080
+          initialDelaySeconds: 60
+          periodSeconds: 30
+          timeoutSeconds: 5
+          failureThreshold: 3
+          successThreshold: 1
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: tomcat-login-service
+spec:
+  type: ClusterIP
+  clusterIP: 10.96.0.21
+  ports:
+  - port: 8080
+    targetPort: 8080
+  selector:
+    app: tomcat-login

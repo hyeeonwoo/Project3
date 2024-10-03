@@ -1,0 +1,54 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: nginx-signup
+  labels:
+    app: nginx-signup
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: nginx-signup
+  template:
+    metadata:
+      labels:
+        app: nginx-signup
+    spec:
+      imagePullSecrets:
+      - name: ecr-secret 
+      containers:
+      - name: nginx
+        image: 784849575779.dkr.ecr.us-east-1.amazonaws.com/nginx-signup:v4.0                    
+        ports:
+        - containerPort: 80
+        resources:
+          requests:
+            cpu: "200m"
+            memory: "256Mi"
+          limits:
+            cpu: "200m"
+            memory: "256Mi"
+        livenessProbe:
+          httpGet:
+            path: /
+            port: 80
+          initialDelaySeconds: 120
+          periodSeconds: 60
+          timeoutSeconds: 5
+          failureThreshold: 3
+          successThreshold: 1
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: nginx-signup-service
+spec:
+  type: NodePort
+  ports:
+  - port: 80
+    targetPort: 80
+    nodePort: 30302
+    protocol: TCP
+  selector:
+    app: nginx-signup

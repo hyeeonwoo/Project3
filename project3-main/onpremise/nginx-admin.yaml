@@ -1,0 +1,54 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: nginx-admin
+  labels:
+    app: nginx-admin
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: nginx-admin
+  template:
+    metadata:
+      labels:
+        app: nginx-admin
+    spec:
+      imagePullSecrets:
+      - name: ecr-secret 
+      containers:
+      - name: nginx
+        image: 784849575779.dkr.ecr.us-east-1.amazonaws.com/nginx-admin:v4.0                
+        ports:
+        - containerPort: 80
+        resources:
+          requests:
+            cpu: "200m"
+            memory: "256Mi"
+          limits:
+            cpu: "200m"
+            memory: "256Mi"
+        livenessProbe:
+          httpGet:
+            path: /
+            port: 80
+          initialDelaySeconds: 60
+          periodSeconds: 30
+          timeoutSeconds: 5
+          failureThreshold: 3
+          successThreshold: 1
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: nginx-admin-service
+spec:
+  type: NodePort
+  ports:
+  - port: 80
+    targetPort: 80
+    nodePort: 30303
+    protocol: TCP
+  selector:
+    app: nginx-admin

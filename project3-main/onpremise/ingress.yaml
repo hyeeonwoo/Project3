@@ -1,0 +1,40 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: ingress
+  annotations:
+    ingressclass.kubernetes.io/is-default-class: "true"
+spec:
+  ingressClassName: nginx  # nginx-ingress 컨트롤러의 클래스 이름
+  rules:
+  - host: www.taehoone.shop
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: nginx-index-service
+            port:
+              number: 80
+      - path: /login.jsp
+        pathType: Prefix
+        backend:
+          service:
+            name: nginx-login-service
+            port:
+              number: 80
+      - path: /signup.jsp
+        pathType: Prefix
+        backend:
+          service:
+            name: nginx-signup-service
+            port:
+              number: 80
+      - path: /admin.jsp
+        pathType: Prefix
+        backend:
+          service:
+            name: nginx-admin-service
+            port:
+              number: 80
